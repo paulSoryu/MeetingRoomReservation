@@ -19,6 +19,15 @@ public sealed class Booking
         CreatedAtUtc = createdAtUtc;
     }
 
+    // For EF Core: constructor binding can't take TimeSlot as a parameter (owned-type
+    // navigations can't be constructor-bound), so EF materializes via this ctor + the
+    // property setters above instead.
+    private Booking()
+    {
+        UserId = null!;
+        TimeSlot = null!;
+    }
+
     public static Result<Booking> Create(Guid resourceId, TimeSlot timeSlot, string userId)
     {
         if (resourceId == Guid.Empty)

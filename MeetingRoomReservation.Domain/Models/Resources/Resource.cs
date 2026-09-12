@@ -18,6 +18,15 @@ public sealed class Resource
         SlotDuration = slotDuration;
     }
 
+    // For EF Core: constructor binding can't take WorkingHours as a parameter (owned-type
+    // navigations can't be constructor-bound), so EF materializes via this ctor + the
+    // property setters above instead.
+    private Resource()
+    {
+        Name = null!;
+        WorkingHours = null!;
+    }
+
     public static Result<Resource> Create(string name, WorkingHours workingHours, TimeSpan slotDuration)
     {
         var validation = Validate(name, slotDuration);
