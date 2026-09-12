@@ -1,9 +1,38 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject AuthTokenProvider TokenProvider
+@inject NavigationManager Navigation
 
-@Body
+<div class="page">
+    <nav>
+        <a href="/">Resources</a>
+        <AuthorizeView>
+            <Authorized>
+                <a href="/my-bookings">My Bookings</a>
+                <AuthorizeView Roles="Admin" Context="adminContext">
+                    <a href="/admin/resources">Manage Resources</a>
+                </AuthorizeView>
+                <span>@context.User.Identity?.Name</span>
+                <button @onclick="Logout">Log out</button>
+            </Authorized>
+            <NotAuthorized>
+                <a href="/login">Log in</a>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+
+    @Body
+</div>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private void Logout()
+    {
+        TokenProvider.Clear();
+        Navigation.NavigateTo("/login");
+    }
+}

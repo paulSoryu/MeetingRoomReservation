@@ -1,7 +1,37 @@
-﻿@page "/"
+@page "/"
+@attribute [Authorize]
+@inject ApiClient ApiClient
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Resources</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Meeting Rooms</h1>
 
-Welcome to your new app.
+@if (_resources is null)
+{
+    <p>Loading...</p>
+}
+else if (_resources.Count == 0)
+{
+    <p>No resources available.</p>
+}
+else
+{
+    <ul>
+        @foreach (var resource in _resources)
+        {
+            <li>
+                <a href="@($"schedule/{resource.Id}")">@resource.Name</a>
+                (@resource.WorkingHoursStart-@resource.WorkingHoursEnd, @resource.SlotDuration.TotalMinutes min slots)
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private IReadOnlyList<ResourceDto>? _resources;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _resources = await ApiClient.GetResourcesAsync();
+    }
+}

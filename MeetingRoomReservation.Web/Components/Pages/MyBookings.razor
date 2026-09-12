@@ -1,0 +1,56 @@
+@page "/my-bookings"
+@attribute [Authorize]
+@inject ApiClient ApiClient
+
+<PageTitle>My Bookings</PageTitle>
+
+<h1>My Bookings</h1>
+
+@if (_bookings is null)
+{
+    <p>Loading...</p>
+}
+else if (_bookings.Count == 0)
+{
+    <p>You have no bookings.</p>
+}
+else
+{
+    <table>
+        <thead><tr><th>Resource</th><th>Start</th><th>End</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var booking in _bookings)
+            {
+                <tr>
+                    <td>@ResourceName(booking.ResourceId)</td>
+                    <td>@booking.SlotStart.ToString("g")</td>
+                    <td>@booking.SlotEnd.ToString("g")</td>
+                    <td><button @onclick="() => CancelAsync(booking.Id)">Cancel</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<BookingDto>? _bookings;
+    private Dictionary<Guid, string> _resourceNames = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var resources = await ApiClient.GetResourcesAsync();
+        _resourceNames = resources.ToDictionary(r => r.Id, r => r.Name);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync() => _bookings = await ApiClient.GetMyBookingsAsync();
+
+    private string ResourceName(Guid resourceId) =>
+        _resourceNames.GetValueOrDefault(resourceId, resourceId.ToString());
+
+    private async Task CancelAsync(Guid id)
+    {
+        await ApiClient.CancelBookingAsync(id);
+        await LoadAsync();
+    }
+}

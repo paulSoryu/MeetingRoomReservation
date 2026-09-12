@@ -1,0 +1,126 @@
+@page "/schedule/{ResourceId:guid}"
+@attribute [Authorize]
+@implements IAsyncDisposable
+@inject ApiClient ApiClient
+@inject BookingHubClient HubClient
+@inject ILogger<ResourceSchedule> Logger
+
+<PageTitle>Schedule</PageTitle>
+
+<h1>Schedule</h1>
+
+<input type="date" value="@_date.ToString("yyyy-MM-dd")" @onchange="OnDateChangedAsync" />
+
+@if (_schedule is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr><th>Start</th><th>End</th><th>Status</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var slot in _schedule.Slots)
+            {
+                <tr>
+                    <td>@slot.SlotStart.ToString("HH:mm")</td>
+                    <td>@slot.SlotEnd.ToString("HH:mm")</td>
+                    <td>@(slot.IsBooked ? "Booked" : "Free")</td>
+                    <td>
+                        @if (!slot.IsBooked)
+                        {
+                            <button @onclick="() => BookAsync(slot)">Book</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (_error is not null)
+{
+    <p style="color:red">@_error</p>
+}
+
+@code {
+    [Parameter] public Guid ResourceId { get; set; }
+
+    private DateOnly _date = DateOnly.FromDateTime(DateTime.Today);
+    private ScheduleDto? _schedule;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        HubClient.SlotStatusChanged += OnSlotStatusChanged;
+
+        // Best-effort: live updates are a nice-to-have. If the hub is unreachable, the page
+        // must still load the schedule below rather than crashing the whole circuit.
+        try
+        {
+            await HubClient.JoinResourceGroupAsync(ResourceId);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "Failed to join the real-time update group for resource {ResourceId}", ResourceId);
+        }
+
+        await LoadScheduleAsync();
+    }
+
+    private async Task LoadScheduleAsync()
+    {
+        _schedule = await ApiClient.GetScheduleAsync(ResourceId, _date);
+    }
+
+    private async Task OnDateChangedAsync(ChangeEventArgs e)
+    {
+        if (DateOnly.TryParse(e.Value?.ToString(), out var date))
+        {
+            _date = date;
+            await LoadScheduleAsync();
+        }
+    }
+
+    private async Task BookAsync(SlotDto slot)
+    {
+        _error = null;
+        var response = await ApiClient.BookSlotAsync(new BookSlotRequest(ResourceId, slot.SlotStart, slot.SlotEnd));
+        if (!response.IsSuccessStatusCode)
+        {
+            _error = response.StatusCode == System.Net.HttpStatusCode.Conflict
+                ? "That slot was just booked by someone else."
+                : "Failed to book the slot.";
+        }
+
+        await LoadScheduleAsync();
+    }
+
+    private void OnSlotStatusChanged(SlotStatusChanged message)
+    {
+        if (message.ResourceId != ResourceId)
+            return;
+
+        _ = InvokeAsync(async () =>
+        {
+            await LoadScheduleAsync();
+            StateHasChanged();
+        });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        HubClient.SlotStatusChanged -= OnSlotStatusChanged;
+
+        try
+        {
+            await HubClient.LeaveResourceGroupAsync(ResourceId);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogWarning(exception, "Failed to leave the real-time update group for resource {ResourceId}", ResourceId);
+        }
+    }
+}

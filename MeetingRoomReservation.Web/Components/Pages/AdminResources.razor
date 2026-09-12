@@ -1,0 +1,83 @@
+@page "/admin/resources"
+@attribute [Authorize(Roles = "Admin")]
+@inject ApiClient ApiClient
+
+<PageTitle>Manage Resources</PageTitle>
+
+<h1>Manage Resources</h1>
+
+<table>
+    <thead><tr><th>Name</th><th>Working Hours</th><th>Slot Duration</th><th></th></tr></thead>
+    <tbody>
+        @if (_resources is not null)
+        {
+            @foreach (var resource in _resources)
+            {
+                <tr>
+                    <td>@resource.Name</td>
+                    <td>@resource.WorkingHoursStart-@resource.WorkingHoursEnd</td>
+                    <td>@resource.SlotDuration</td>
+                    <td><button @onclick="() => DeleteAsync(resource.Id)">Delete</button></td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<h2>Add Resource</h2>
+<EditForm Model="_newResource" OnValidSubmit="CreateAsync">
+    <div><label>Name</label><InputText @bind-Value="_newResource.Name" /></div>
+    <div><label>Start (HH:mm)</label><InputText @bind-Value="_newResource.Start" /></div>
+    <div><label>End (HH:mm)</label><InputText @bind-Value="_newResource.End" /></div>
+    <div><label>Slot minutes</label><InputNumber @bind-Value="_newResource.SlotMinutes" /></div>
+    <button type="submit">Create</button>
+</EditForm>
+
+@if (_error is not null)
+{
+    <p style="color:red">@_error</p>
+}
+
+@code {
+    private IReadOnlyList<ResourceDto>? _resources;
+    private readonly NewResourceModel _newResource = new();
+    private string? _error;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync() => _resources = await ApiClient.GetResourcesAsync();
+
+    private async Task CreateAsync()
+    {
+        _error = null;
+        if (!TimeOnly.TryParse(_newResource.Start, out var start) || !TimeOnly.TryParse(_newResource.End, out var end))
+        {
+            _error = "Invalid time format - use HH:mm.";
+            return;
+        }
+
+        var request = new CreateResourceRequest(_newResource.Name, start, end, TimeSpan.FromMinutes(_newResource.SlotMinutes));
+        var response = await ApiClient.CreateResourceAsync(request);
+        if (!response.IsSuccessStatusCode)
+        {
+            _error = "Failed to create resource.";
+            return;
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(Guid id)
+    {
+        await ApiClient.DeleteResourceAsync(id);
+        await LoadAsync();
+    }
+
+    private sealed class NewResourceModel
+    {
+        public string Name { get; set; } = "";
+        public string Start { get; set; } = "09:00";
+        public string End { get; set; } = "17:00";
+        public int SlotMinutes { get; set; } = 30;
+    }
+}

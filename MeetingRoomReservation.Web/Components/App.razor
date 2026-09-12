@@ -9,13 +9,21 @@
     <link rel="stylesheet" href="@Assets["app.css"]" />
     <link rel="stylesheet" href="@Assets["MeetingRoomReservation.Web.styles.css"]" />
     <ImportMap />
-    <HeadOutlet @rendermode="InteractiveServer" />
+    <HeadOutlet @rendermode="RenderModeServer" />
 </head>
 
 <body>
-    <Routes @rendermode="InteractiveServer" />
+    <Routes @rendermode="RenderModeServer" />
     <ReconnectModal />
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 
 </html>
+
+@code {
+    // Prerendering disabled: [Authorize] must only be evaluated inside the interactive
+    // circuit via our own AuthenticationStateProvider (JWT held in a scoped service), never
+    // during the static-SSR HTTP pass, which would need a real ASP.NET Core auth scheme
+    // registered via AddAuthentication() - something this app deliberately has none of.
+    private static readonly IComponentRenderMode RenderModeServer = new InteractiveServerRenderMode(prerender: false);
+}
