@@ -18,8 +18,12 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+        // AddIdentityCore (not AddIdentity) - this is a pure API with JWT bearer auth, so we don't
+        // want Identity's default cookie scheme registered as the challenge scheme; AddIdentity
+        // would silently redirect unauthenticated requests to "/Account/Login" instead of a 401.
         services
-            .AddIdentity<ApplicationUser, IdentityRole>()
+            .AddIdentityCore<ApplicationUser>()
+            .AddRoles<IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 

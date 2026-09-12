@@ -139,6 +139,7 @@ cd MeetingRoomReservation
 
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "<your connection string>" --project MeetingRoomReservation.Api
 dotnet user-secrets set "Azure:SignalR:ConnectionString" "<your SignalR connection string>" --project MeetingRoomReservation.Api
+dotnet user-secrets set "Jwt:Key" "<a long random signing key>" --project MeetingRoomReservation.Api
 
 dotnet restore
 dotnet run --project MeetingRoomReservation.Api
@@ -149,7 +150,7 @@ Pending EF Core migrations are applied automatically at startup, and the databas
 
 ## Configuration
 
-Connection settings live under `ConnectionStrings:DefaultConnection` and `Azure:SignalR:ConnectionString`. Never commit real values — use `dotnet user-secrets` locally and Azure App Service Application Settings in deployment.
+Connection settings live under `ConnectionStrings:DefaultConnection`, `Azure:SignalR:ConnectionString`, and `Jwt:Key` (the HMAC signing key for issued JWTs — `Jwt:Issuer`/`Jwt:Audience` are non-secret and live in `appsettings.json`). Never commit real values — use `dotnet user-secrets` locally and Azure App Service Application Settings in deployment.
 
 ## Database & Migrations
 

@@ -5,6 +5,7 @@ using MeetingRoomReservation.Application.Interfaces;
 using MeetingRoomReservation.Domain.Models.Bookings;
 using MeetingRoomReservation.Domain.Models.Resources;
 using MeetingRoomReservation.Domain.Results;
+using Microsoft.Extensions.Logging;
 
 namespace MeetingRoomReservation.Application.Features.Bookings.BookSlot;
 
@@ -27,7 +28,8 @@ public sealed class BookSlotCommandValidator : AbstractValidator<BookSlotCommand
 public sealed class BookSlotCommandHandler(
     IResourceRepository resourceRepository,
     IBookingRepository bookingRepository,
-    IBookingNotifier bookingNotifier)
+    IBookingNotifier bookingNotifier,
+    ILogger<BookSlotCommandHandler> logger)
     : IRequestHandler<BookSlotCommand, Result<BookingResponse>>
 {
     public async Task<Result<BookingResponse>> Handle(BookSlotCommand request, CancellationToken cancellationToken)
@@ -51,7 +53,16 @@ public sealed class BookSlotCommandHandler(
         if (insertResult.IsFailure)
             return Result.Failure<BookingResponse>(insertResult.Error!);
 
-        await bookingNotifier.NotifyBookingCreatedAsync(booking.ResourceId, booking.TimeSlot, cancellationToken);
+        // Best-effort: the booking is already committed, so a notification outage must not
+        // turn a successful booking into a failed request.
+        try
+        {
+            await bookingNotifier.NotifyBookingCreatedAsync(booking.ResourceId, booking.TimeSlot, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Failed to send booking-created notification for booking {BookingId}", booking.Id);
+        }
 
         return Result.Success(booking.ToResponse());
     }

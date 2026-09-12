@@ -49,12 +49,13 @@ public sealed class DatabaseSeeder(
         if (await dbContext.Resources.AnyAsync(cancellationToken))
             return;
 
-        var workingHours = WorkingHours.Create(new TimeOnly(9, 0), new TimeOnly(17, 0)).Value;
-
+        // Each Resource needs its own WorkingHours instance - EF Core's change tracker mishandles
+        // the same owned-type CLR instance being shared across multiple owner entities (it silently
+        // dropped the owned columns from the first INSERT when both resources shared one instance).
         var resources = new[]
         {
-            Resource.Create("Alpha Conference Room", workingHours, TimeSpan.FromMinutes(30)).Value,
-            Resource.Create("Beta Meeting Room", workingHours, TimeSpan.FromMinutes(60)).Value,
+            Resource.Create("Alpha Conference Room", WorkingHours.Create(new TimeOnly(9, 0), new TimeOnly(17, 0)).Value, TimeSpan.FromMinutes(30)).Value,
+            Resource.Create("Beta Meeting Room", WorkingHours.Create(new TimeOnly(9, 0), new TimeOnly(17, 0)).Value, TimeSpan.FromMinutes(60)).Value,
         };
 
         dbContext.Resources.AddRange(resources);

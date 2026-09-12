@@ -3,6 +3,7 @@ using MediatR;
 using MeetingRoomReservation.Application.Interfaces;
 using MeetingRoomReservation.Domain.Models.Bookings;
 using MeetingRoomReservation.Domain.Results;
+using Microsoft.Extensions.Logging;
 
 namespace MeetingRoomReservation.Application.Features.Bookings.CancelBooking;
 
@@ -19,7 +20,8 @@ public sealed class CancelBookingCommandValidator : AbstractValidator<CancelBook
 
 public sealed class CancelBookingCommandHandler(
     IBookingRepository bookingRepository,
-    IBookingNotifier bookingNotifier)
+    IBookingNotifier bookingNotifier,
+    ILogger<CancelBookingCommandHandler> logger)
     : IRequestHandler<CancelBookingCommand, Result>
 {
     public async Task<Result> Handle(CancelBookingCommand request, CancellationToken cancellationToken)
@@ -31,7 +33,17 @@ public sealed class CancelBookingCommandHandler(
             return Result.Failure(BookingErrors.NotFound(request.BookingId));
 
         await bookingRepository.DeleteAsync(booking, cancellationToken);
-        await bookingNotifier.NotifyBookingCancelledAsync(booking.ResourceId, booking.TimeSlot, cancellationToken);
+
+        // Best-effort: the cancellation is already committed, so a notification outage must not
+        // turn a successful cancellation into a failed request.
+        try
+        {
+            await bookingNotifier.NotifyBookingCancelledAsync(booking.ResourceId, booking.TimeSlot, cancellationToken);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Failed to send booking-cancelled notification for booking {BookingId}", booking.Id);
+        }
 
         return Result.Success();
     }
