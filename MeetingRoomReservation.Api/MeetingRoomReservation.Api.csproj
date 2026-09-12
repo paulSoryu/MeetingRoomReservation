@@ -14,4 +14,9 @@
     <Folder Include="Controllers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MeetingRoomReservation.Application\MeetingRoomReservation.Application.csproj" />
+    <ProjectReference Include="..\MeetingRoomReservation.Infrastructure\MeetingRoomReservation.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

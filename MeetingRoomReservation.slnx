@@ -3,5 +3,6 @@
   <Project Path="MeetingRoomReservation.Application/MeetingRoomReservation.Application.csproj" />
   <Project Path="MeetingRoomReservation.Domain/MeetingRoomReservation.Domain.csproj" />
   <Project Path="MeetingRoomReservation.Infrastructure/MeetingRoomReservation.Infrastructure.csproj" />
+  <Project Path="MeetingRoomReservation.Tests/MeetingRoomReservation.Tests.csproj" />
   <Project Path="MeetingRoomReservation.Web/MeetingRoomReservation.Web.csproj" />
 </Solution>
