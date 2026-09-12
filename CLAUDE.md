@@ -194,11 +194,10 @@ dotnet test --filter "FullyQualifiedName~Concurrency"
 
 ## Current Status
 
-[Update as work progresses, e.g.:]
 - [x] Azure infrastructure provisioned (SQL, SignalR, Web App)
-- [ ] Domain models and initial migration
-- [ ] Identity/roles and auth
-- [ ] Booking command with optimistic concurrency
-- [ ] SignalR Hub + Blazor client integration
-- [ ] Automated concurrency test
+- [x] Domain models and initial migration
+- [x] Identity/roles and auth
+- [x] Booking command with unique-index-based conflict handling
+- [x] SignalR Hub + Blazor client integration
+- [x] Automated concurrency test
 - [ ] Deployment
