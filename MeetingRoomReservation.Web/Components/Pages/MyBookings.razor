@@ -4,32 +4,34 @@
 
 <PageTitle>My Bookings</PageTitle>
 
-<h1>My Bookings</h1>
+<h1 class="mb-4">My Bookings</h1>
 
 @if (_bookings is null)
 {
-    <p>Loading...</p>
+    <p class="text-muted">Loading...</p>
 }
 else if (_bookings.Count == 0)
 {
-    <p>You have no bookings.</p>
+    <p class="text-muted">You have no bookings.</p>
 }
 else
 {
-    <table>
-        <thead><tr><th>Resource</th><th>Start</th><th>End</th><th></th></tr></thead>
-        <tbody>
-            @foreach (var booking in _bookings)
-            {
-                <tr>
-                    <td>@ResourceName(booking.ResourceId)</td>
-                    <td>@booking.SlotStart.ToString("g")</td>
-                    <td>@booking.SlotEnd.ToString("g")</td>
-                    <td><button @onclick="() => CancelAsync(booking.Id)">Cancel</button></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead><tr><th>Resource</th><th>Start</th><th>End</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var booking in _bookings)
+                {
+                    <tr>
+                        <td>@ResourceName(booking.ResourceId)</td>
+                        <td>@booking.SlotStart.ToString("g")</td>
+                        <td>@booking.SlotEnd.ToString("g")</td>
+                        <td><button class="btn btn-sm btn-outline-danger" @onclick="() => CancelAsync(booking.Id)">Cancel</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {

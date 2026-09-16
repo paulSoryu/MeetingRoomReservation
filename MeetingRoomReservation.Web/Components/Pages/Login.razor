@@ -5,24 +5,32 @@
 
 <PageTitle>Log in</PageTitle>
 
-<h1>Log in</h1>
+<div class="row justify-content-center">
+    <div class="col-12 col-sm-8 col-md-5 col-lg-4">
+        <div class="card shadow-sm mt-5">
+            <div class="card-body p-4">
+                <h1 class="h3 mb-3 text-center">Log in</h1>
 
-<EditForm Model="_model" OnValidSubmit="HandleLoginAsync">
-    <div>
-        <label>Email</label>
-        <InputText @bind-Value="_model.Email" />
-    </div>
-    <div>
-        <label>Password</label>
-        <InputText type="password" @bind-Value="_model.Password" />
-    </div>
-    <button type="submit">Log in</button>
-</EditForm>
+                <EditForm Model="_model" OnValidSubmit="HandleLoginAsync">
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <InputText class="form-control" @bind-Value="_model.Email" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <InputText type="password" class="form-control" @bind-Value="_model.Password" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Log in</button>
+                </EditForm>
 
-@if (_error is not null)
-{
-    <p style="color:red">@_error</p>
-}
+                @if (_error is not null)
+                {
+                    <div class="alert alert-danger mt-3 mb-0">@_error</div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
 
 @code {
     private readonly LoginModel _model = new();

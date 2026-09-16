@@ -4,27 +4,31 @@
 
 <PageTitle>Resources</PageTitle>
 
-<h1>Meeting Rooms</h1>
+<h1 class="mb-4">Meeting Rooms</h1>
 
 @if (_resources is null)
 {
-    <p>Loading...</p>
+    <p class="text-muted">Loading...</p>
 }
 else if (_resources.Count == 0)
 {
-    <p>No resources available.</p>
+    <p class="text-muted">No resources available.</p>
 }
 else
 {
-    <ul>
+    <div class="list-group">
         @foreach (var resource in _resources)
         {
-            <li>
-                <a href="@($"schedule/{resource.Id}")">@resource.Name</a>
-                (@resource.WorkingHoursStart-@resource.WorkingHoursEnd, @resource.SlotDuration.TotalMinutes min slots)
-            </li>
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
+               href="@($"schedule/{resource.Id}")">
+                <span class="fw-semibold">@resource.Name</span>
+                <span class="text-muted small">
+                    @resource.WorkingHoursStart-@resource.WorkingHoursEnd
+                    <span class="badge text-bg-secondary ms-2">@resource.SlotDuration.TotalMinutes min slots</span>
+                </span>
+            </a>
         }
-    </ul>
+    </div>
 }
 
 @code {

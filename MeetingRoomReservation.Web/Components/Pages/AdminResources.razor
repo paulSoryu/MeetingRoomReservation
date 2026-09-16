@@ -4,38 +4,56 @@
 
 <PageTitle>Manage Resources</PageTitle>
 
-<h1>Manage Resources</h1>
+<h1 class="mb-4">Manage Resources</h1>
 
-<table>
-    <thead><tr><th>Name</th><th>Working Hours</th><th>Slot Duration</th><th></th></tr></thead>
-    <tbody>
-        @if (_resources is not null)
-        {
-            @foreach (var resource in _resources)
+<div class="table-responsive mb-4">
+    <table class="table table-striped align-middle">
+        <thead><tr><th>Name</th><th>Working Hours</th><th>Slot Duration</th><th></th></tr></thead>
+        <tbody>
+            @if (_resources is not null)
             {
-                <tr>
-                    <td>@resource.Name</td>
-                    <td>@resource.WorkingHoursStart-@resource.WorkingHoursEnd</td>
-                    <td>@resource.SlotDuration</td>
-                    <td><button @onclick="() => DeleteAsync(resource.Id)">Delete</button></td>
-                </tr>
+                @foreach (var resource in _resources)
+                {
+                    <tr>
+                        <td>@resource.Name</td>
+                        <td>@resource.WorkingHoursStart-@resource.WorkingHoursEnd</td>
+                        <td>@resource.SlotDuration</td>
+                        <td><button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteAsync(resource.Id)">Delete</button></td>
+                    </tr>
+                }
             }
-        }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 
-<h2>Add Resource</h2>
-<EditForm Model="_newResource" OnValidSubmit="CreateAsync">
-    <div><label>Name</label><InputText @bind-Value="_newResource.Name" /></div>
-    <div><label>Start (HH:mm)</label><InputText @bind-Value="_newResource.Start" /></div>
-    <div><label>End (HH:mm)</label><InputText @bind-Value="_newResource.End" /></div>
-    <div><label>Slot minutes</label><InputNumber @bind-Value="_newResource.SlotMinutes" /></div>
-    <button type="submit">Create</button>
-</EditForm>
+<div class="card col-12 col-md-6">
+    <div class="card-body">
+        <h2 class="h5 card-title">Add Resource</h2>
+        <EditForm Model="_newResource" OnValidSubmit="CreateAsync">
+            <div class="mb-3">
+                <label class="form-label">Name</label>
+                <InputText class="form-control" @bind-Value="_newResource.Name" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Start (HH:mm)</label>
+                <InputText class="form-control" @bind-Value="_newResource.Start" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">End (HH:mm)</label>
+                <InputText class="form-control" @bind-Value="_newResource.End" />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Slot minutes</label>
+                <InputNumber class="form-control" @bind-Value="_newResource.SlotMinutes" />
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
 
 @if (_error is not null)
 {
-    <p style="color:red">@_error</p>
+    <div class="alert alert-danger mt-3">@_error</div>
 }
 
 @code {

@@ -7,42 +7,55 @@
 
 <PageTitle>Schedule</PageTitle>
 
-<h1>Schedule</h1>
+<h1 class="mb-3">Schedule</h1>
 
-<input type="date" value="@_date.ToString("yyyy-MM-dd")" @onchange="OnDateChangedAsync" />
+<div class="mb-3 col-12 col-sm-6 col-md-4 col-lg-3">
+    <input type="date" class="form-control" value="@_date.ToString("yyyy-MM-dd")" @onchange="OnDateChangedAsync" />
+</div>
 
 @if (_schedule is null)
 {
-    <p>Loading...</p>
+    <p class="text-muted">Loading...</p>
 }
 else
 {
-    <table>
-        <thead>
-            <tr><th>Start</th><th>End</th><th>Status</th><th></th></tr>
-        </thead>
-        <tbody>
-            @foreach (var slot in _schedule.Slots)
-            {
-                <tr>
-                    <td>@slot.SlotStart.ToString("HH:mm")</td>
-                    <td>@slot.SlotEnd.ToString("HH:mm")</td>
-                    <td>@(slot.IsBooked ? "Booked" : "Free")</td>
-                    <td>
-                        @if (!slot.IsBooked)
-                        {
-                            <button @onclick="() => BookAsync(slot)">Book</button>
-                        }
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr><th>Start</th><th>End</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var slot in _schedule.Slots)
+                {
+                    <tr>
+                        <td>@slot.SlotStart.ToString("HH:mm")</td>
+                        <td>@slot.SlotEnd.ToString("HH:mm")</td>
+                        <td>
+                            @if (slot.IsBooked)
+                            {
+                                <span class="badge text-bg-danger">Booked</span>
+                            }
+                            else
+                            {
+                                <span class="badge text-bg-success">Free</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!slot.IsBooked)
+                            {
+                                <button class="btn btn-sm btn-primary" @onclick="() => BookAsync(slot)">Book</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @if (_error is not null)
 {
-    <p style="color:red">@_error</p>
+    <div class="alert alert-danger">@_error</div>
 }
 
 @code {
